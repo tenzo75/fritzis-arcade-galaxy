@@ -1,0 +1,404 @@
+/* In Hauptverzeichnis/style.css */
+
+/* --------------------------------------------------------------------------
+   1. @font-face Deklarationen (Schriftarten-Import) 
+   -------------------------------------------------------------------------- */
+@font-face {
+    font-family: 'VT323';
+    src: url('fonts/VT323/VT323-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Kalam';
+    src: url('fonts/Kalam/Kalam-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Kalam';
+    src: url('fonts/Kalam/Kalam-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Kalam';
+    src: url('fonts/Kalam/Kalam-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* --------------------------------------------------------------------------
+   2. Globale Stile & Body 
+   -------------------------------------------------------------------------- */
+
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    background-color: #333;
+    background-image: url('./images/back.png');
+    background-attachment: fixed;
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: center top;
+    font-family: 'Kalam', 'Arial', sans-serif;
+    font-weight: 400;
+    color: white;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Layout-Container (Der "Arcade-Automat") 
+   -------------------------------------------------------------------------- */
+
+.game-container {
+    width: 100%;
+    max-width: 2200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    padding: 10px 0;
+}
+
+.canvas-column {
+    position: relative;
+    width: 1558px;
+    height: 890px;
+    background-image: url('images/tv_bezel.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: auto;
+    flex-shrink: 0;
+    transform-origin: center center;
+}
+
+.bezel-frame-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 20;
+    pointer-events: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   4. Bildschirm-Bereich (Canvas & Overlays) 
+   -------------------------------------------------------------------------- */
+
+.screen-content-area {
+    position: absolute;
+    top: 120.5px;
+    left: 249.5px;
+    width: 1056px;
+    height: 640px;
+    background-color: #000;
+    z-index: 1;
+    overflow: hidden;
+    mask-image: url('images/tv_mask.png');
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    mask-position: center;
+}
+
+.screen-content-area,
+.screen-content-area * {
+  cursor: none;
+}
+
+#gameCanvas {
+    display: block;
+}
+
+#power-on-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'VT323', monospace;
+    font-size: 30px;
+    color: #DDDDDD;
+    z-index: 5; 
+}
+
+/* --------------------------------------------------------------------------
+   5. HTML Overlays (Allgemeiner Container) 
+   -------------------------------------------------------------------------- */
+
+#intro-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Spezifische Overlay-Sektionen 
+   -------------------------------------------------------------------------- */
+
+/* --- 6.1 Intro-Scrolltext (Star Wars Stil) --- */
+#intro-perspective-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    perspective: 450px;
+    perspective-origin: 50% 100%;
+    transition: opacity 1.5s ease-out;
+}
+#intro-scroll-content {
+    position: absolute;
+    width: 90%;
+    left: 5%;
+    bottom: 0;
+    text-align: justify;
+    /* GEÄNDERT: Grundfarbe des Textes auf ein helles Grau gesetzt */
+    color: #FFFF00; 
+    font-family: 'Kalam', 'Arial', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    transform-origin: 50% 100%;
+}
+#intro-scroll-content h1,
+#intro-scroll-content h2 {
+    text-align: center;
+    margin: 0.5em 0;
+    font-weight: 700;
+}
+/* GEÄNDERT: Überschriften an das neue Design angepasst */
+#intro-scroll-content h1 { 
+    font-size: 1.5em; 
+    color: #FF00FF; /* Pink */
+    text-shadow: 0 0 5px #FF00FF;
+}
+#intro-scroll-content h2 { 
+    font-size: 1.1em; 
+    color: #00FFFF; /* Cyan */
+    text-shadow: 0 0 5px #00FFFF;
+}
+#intro-scroll-content p { margin: 1.5em 0; line-height: 1.5; }
+#intro-scroll-content strong { display: block; margin-top: 1em; text-align: center; font-weight: 700; }
+
+/* --- 6.2 Spielauswahl-Menü (NEUES NEON-DESIGN) --- */
+#game-selection-menu {
+    text-align: center;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+}
+
+/* NEU: Styling für das neue Header-Bild im Menü */
+#menu-header-image {
+    display: block;
+    width: 80%; /* Breite relativ zum Menü-Container */
+    max-width: 400px; /* Maximale Breite, damit es nicht zu riesig wird */
+    margin: 0 auto 10px auto; /* Zentriert das Bild und schafft Abstand nach unten */
+}
+.menu-rocket {
+    position: absolute; /* Positioniert sich relativ zum Menü-Container */
+    width: 150px;       /* Kleinere Größe für den Bildschirm (anpassbar) */
+    z-index: -1;        /* Legt die Raketen HINTER die Buttons */
+    
+    /* Sanfter Einblend-Effekt bleibt erhalten */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out 4s; /* Startet mit 1s Verzögerung */
+}
+
+/* Macht die Rakete sichtbar, wenn das Menü erscheint */
+#game-selection-menu:not(.hidden) .menu-rocket {
+    opacity: 1;
+}
+
+/* Position der linken Rakete */
+#left-rocket {
+    top: 70px;  /* Abstand von oben (anpassbar) */
+    left: -50px;  /* Abstand von links (anpassbar) */
+    transform: rotate(-20deg); 
+}
+
+/* Position der rechten Rakete */
+#right-rocket {
+    top: 70px;
+    right: -50px;
+    transform: rotate(20deg);
+}
+#game-selection-menu p {
+    font-size: 28px;
+    color: #FF00FF;
+    margin-bottom: 30px;
+    font-weight: 700;
+    text-shadow: 0 0 5px #FF00FF, 0 0 10px #FF00FF;
+}
+.game-entry {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   /* margin-bottom: 5px;*/
+    width: 100%;
+    margin-top: 0px; /* Abstand zum Element darüber (Logo oder anderer Button) */
+}
+.game-option {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 50px; 
+    border: 2px solid;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.4);
+    transition: all 0.2s ease-out;
+    text-align: center;
+    min-width: 350px;
+    line-height: 1.1;
+}
+.game-entry:nth-of-type(1) .game-option {
+    border-color: #FF00FF;
+    color: #FF00FF;
+    box-shadow: 0 0 12px rgba(255, 0, 255, 0.7);
+    margin-top: 20px;
+}
+.game-entry:nth-of-type(2) .game-option {
+    border-color: #00FFFF;
+    color: #00FFFF;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.7);
+    margin-top: 15px;
+}
+.game-entry:nth-of-type(3) .game-option {
+    border-color: #FFFF00;
+    color: #FFFF00;
+    box-shadow: 0 0 12px rgba(255, 255, 0, 0.7);
+    margin-top: 55px;
+}
+
+/* KORRIGIERT: Lesbarkeit des fokussierten Buttons verbessert */
+.game-option.menu-item-focused {
+    color: #FFFFFF; /* Text bleibt weiß */
+    transform: scale(1.05);
+    /* Dieser mehrstufige Text-Schatten erzeugt eine starke, aber weiche Kante
+      direkt hinter dem Text und sorgt für maximale Lesbarkeit.
+    */
+    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 6px #000;
+}
+
+/* Jeder Button bekommt jetzt einen inneren Schatten in seiner Farbe */
+.game-entry:nth-of-type(1) .game-option.menu-item-focused {
+    background-color: #FF00FF;
+    /* Der erste Wert ist der innere Schatten, der zweite das äußere Glühen */
+    box-shadow: inset 0 0 15px rgba(50, 0, 50, 0.8), 0 0 20px #FF00FF;
+}
+.game-entry:nth-of-type(2) .game-option.menu-item-focused {
+    background-color: #00FFFF;
+    box-shadow: inset 0 0 15px rgba(0, 50, 50, 0.8), 0 0 20px #00FFFF;
+}
+.game-entry:nth-of-type(3) .game-option.menu-item-focused {
+    background-color: #FFFF00;
+    box-shadow: inset 0 0 15px rgba(50, 50, 0, 0.8), 0 0 20px #FFFF00;
+}
+
+#game-selection-menu .menu-controls-hint {
+    margin-top: 10px;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    text-shadow: none;
+}
+
+/* --- 6.3 Keyframe-Animationen --- */
+@keyframes starwars-crawl {
+    from {
+        transform: rotateX(10deg) translateY(1250px);
+    }
+    to {
+        transform: rotateX(15deg) translateY(-2500px); 
+    }
+}
+@keyframes menu-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(750px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#einwilligungs-dialog {
+    padding: 40px;
+    text-align: center;
+    background-color: #000;
+    color: #ddd;
+    font-family: 'Kalam', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+#einwilligungs-dialog h1 { font-size: 40px; color: #FFFF00; }
+#einwilligungs-dialog p { font-size: 22px; max-width: 600px; margin: 20px 0; }
+#einwilligungs-dialog button {
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #333;
+    color: #ddd;
+    border: 2px solid #ddd;
+    pointer-events: none; /* NEU: Deaktiviert alle Maus-Ereignisse */
+    cursor: none;         /* Stellt sicher, dass kein Mauszeiger erscheint */
+}
+#einwilligungs-dialog button:hover { background-color: #555; }
+
+#einwilligungs-dialog button.selected {
+    border-color: #FFFF00; /* Gelber Rahmen für den Fokus */
+    box-shadow: 0 0 10px #FFFF00;
+}
+
+#storage-status-hint {
+    position: absolute;
+    bottom: 20px; /* Position am unteren Rand des Bildschirms */
+    width: 100%;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #888; /* Unauffällige Farbe */
+    z-index: 6; /* Über der Einschalt-Nachricht */
+}
+
+/* --------------------------------------------------------------------------
+   7. Zustandsklassen (z.B. zum Verstecken von Elementen)
+   -------------------------------------------------------------------------- */
+.hidden {
+    display: none !important;
+}

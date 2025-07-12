@@ -1,0 +1,89 @@
+<!-- im Hauptverzeichniss index.html -->
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fritzi’s Arcade Galaxy!</title>
+    <!--<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>-->
+    <script src="libs/supabase.js"></script> 
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="boot.css"> 
+    <link rel="stylesheet" href="abspann.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="canvas-column">
+            <div class="screen-content-area">
+
+                <div id="einwilligungs-dialog" style="display: none;">
+      <h1>Online-Funktion (DSGVO)</h1>
+      <p>Möchtest du die Online-Highscore für alle Spiele aktivieren? </p>
+      <p>
+        Damit erklärst du dich einverstanden, dass dein Name und Punktzahl öffentlich gespeichert und angezeigt werden. Zur Verarbeitung werden die Daten und IP-Adresse an die Open Source Plattfom Supabase übertragen.
+        Wenn du damit nicht Einverstanden bist wähle den Lokalen Offline Modus aus.
+    </p>
+      <button id="button-online">JA, Online aktivieren</button>
+      <button id="button-local">NEIN, nur lokal speichern</button>
+    </div>
+    
+                <div id="power-on-message" class="hidden">
+                    &gt;&gt; Enter zum Einschalten &lt;&lt;
+                </div>
+                <div id="storage-status-hint" class="hidden"></div>
+                <div id="intro-container" class="hidden">
+                    <div id="intro-perspective-box">
+                        <div id="intro-scroll-content">
+                            <h1>FRITZI’S ARCADE GALAXY</h1>
+                            <h2>Der Platz zum abschalten und Spaß haben!!!</h2>
+                            <br>
+                            <p>Willkommen in der Videospielkonsole "Fritzi’s Arcade Galaxy!" Ein Universum voller Spaß und... gelegentlicher Tollpatschigkeit erwartet dich.</p>    
+                            <p>Spiele die besten Szenen aus Fritzi’s GTA RP Abenteuern!</p>
+                            <p>
+                            Mit den folgenden Spielen:<br>
+                            Der Klassiker: <span style="color: #FF00FF; text-shadow: 0 0 5px #FFFFFF;">Schlüsselmomente - Das Spiel</span>  <br>Jetzt in einer leicht überarbeiteten Version mit verbesserter Hamster KI, mehr Level, mehr Schlüssel, mehr Spaß!<br><br>
+                            <span style="color: #00FFFF; text-shadow: 0 0 5px #FFFFFF;">Flinke Fritzi - Tour durch Los Santos</span> <br>Fahre mit Fritzi über die Straßen von Los Santos. Der ultimative Test für deine Reflexe! Wird Fritzi diesen wilden Ritt Überleben?
+                            </p>
+                            <p>Bevor du dich jedoch ins Getümmel stürzt:</p>
+                            <p><strong>Die Allgemeine Steuerung der Konsole:</strong>
+                            <br>Enter: Intro überspringen / Auswahl bestätigen<br>Pfeiltasten: Navigation<br>ESC: Konsolen Reset</p>
+                            <p>Wähle nun dein Abenteuer...</p>
+                        </div>
+                    </div>
+                    <div id="game-selection-menu" class="hidden">
+                         <img id="menu-header-image" src="images/arcade_header.png" alt="Fritzi's Arcade Galaxy Logo">
+                         <img id="left-rocket" class="menu-rocket" src="images/rocket_menue_links.png" alt="Rakete links">
+                         <img id="right-rocket" class="menu-rocket" src="images/rocket_menue_rechts.png" alt="Rakete rechts">
+                        <div class="game-entry">
+                            <div class="game-option main-game-button" data-game-id="schluesselmomente" data-row="0" data-col="0">Schlüsselmomente<br>
+                            <span style="font-size: 0.8em;"></span>Das Spiel</span></div>
+                        </div>
+                        <div class="game-entry">
+                            <div class="game-option main-game-button" data-game-id="flinkefritzi" data-row="1" data-col="0">Flinke Fritzi<br>
+                            <span style="font-size: 0.8em;"></span>Tour durch Los Santos</span></div>
+                        </div>
+                        <div class="game-entry">
+                            <div class="game-option main-game-button" data-game-id="doodlefritzi" data-row="2" data-col="0">Abspann / Runterfahren</div>
+                        </div>
+                        <p class="menu-controls-hint">
+                            Steuerung: Pfeiltasten (Navigation) &nbsp;|&nbsp; Enter (Auswahl) &nbsp;|&nbsp; ESC (Zurück zum Intro)
+                        </p>
+                    </div>
+                </div> 
+
+                <div id="boot-overlay-elements" class="hidden">
+                    <img id="epalogo" src="images/epalogo.png" alt="EPA Logo">
+                    <img id="arcade-screen" src="images/arcade_galaxy.png" alt="Arcade Ladebildschirm">
+                </div>
+
+                <canvas id="gameCanvas" width="1056" height="640" tabindex="0">Ihr Browser unterstützt das Canvas-Element nicht.</canvas>
+                
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>

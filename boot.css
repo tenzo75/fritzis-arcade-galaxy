@@ -1,0 +1,23 @@
+/* In Hauptverzeichnis/boot.css */
+
+#epalogo { 
+    position: absolute; 
+    top: 35px;  /* Etwas angepasst für den größeren Canvas */
+    right: 50px; /* Etwas angepasst für den größeren Canvas */
+    width: 180px; 
+    display: none; 
+    transition: opacity 5s ease-in;
+}
+        
+#arcade-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+
+
+    transition: transform 3s ease-in-out;
+}
