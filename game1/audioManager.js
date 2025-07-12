@@ -2,14 +2,14 @@
 
 // priority: 1 = normal, 10 = sehr wichtig (stoppt andere Sounds)
 const soundConfig = {
-    'keyPickup': { src: '../game1/sound/coin1.wav', volume: 0.7, priority: 1 },
-    'enemyHit': { src: '../game1/sound/klauen1.wav', volume: 0.5, priority: 2 },
-    'obstacleHit': { src: '../game1/sound/bumper1.wav', volume: 0.5, priority: 1 },
-    'tick': { src: '../game1/sound/tick1.wav', volume: 0.5, priority: 1 },
-    'schluesselmoment': { src: '../game1/sound/schluesselmoment1.wav', volume: 0.8, priority: 10 },
-    'menuMove': { src: '../game1/sound/auswahl.wav', volume: 0.7, priority: 2 },
-    'menuSelect': { src: '../game1/sound/menu_select.mp3', volume: 0.8, priority: 5 },
-    'menuMusic': { src: '../game1/sound/menu_background.mp3', volume: 0.3, loop: true, priority: 0 },
+    'keyPickup': { src: './game1/sound/coin1.wav', volume: 0.7, priority: 1 },
+    'enemyHit': { src: './game1/sound/klauen1.wav', volume: 0.5, priority: 2 },
+    'obstacleHit': { src: './game1/sound/bumper1.wav', volume: 0.5, priority: 1 },
+    'tick': { src: './game1/sound/tick1.wav', volume: 0.5, priority: 1 },
+    'schluesselmoment': { src: './game1/sound/schluesselmoment1.wav', volume: 0.8, priority: 10 },
+    'menuMove': { src: './game1/sound/auswahl.wav', volume: 0.7, priority: 2 },
+    'menuSelect': { src: './game1/sound/menu_select.mp3', volume: 0.8, priority: 5 },
+    'menuMusic': { src: './game1/sound/menu_background.mp3', volume: 0.3, loop: true, priority: 0 },
 };
 
 const audioNodes = {};
