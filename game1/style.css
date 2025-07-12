@@ -1,0 +1,10 @@
+/* In game1/style.css */
+
+@font-face {
+  font-family: 'GameFont'; 
+  
+  src: url('fonts/AlfaSlabOne-Regular.ttf') format('truetype');
+  
+  font-weight: normal;
+  font-style: normal;
+}
