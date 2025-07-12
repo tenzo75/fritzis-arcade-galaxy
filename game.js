@@ -501,7 +501,6 @@ function initializeConsentCheck() {
 function setupConsentAndStatus() {
     // === Elemente und Zustand ===
     const consentDialog = document.getElementById('einwilligungs-dialog');
-    const powerOnScreen = document.getElementById('power-on-message');
     const statusHint = document.getElementById('storage-status-hint');
     const consentButtons = [
         document.getElementById('button-online'),
@@ -519,13 +518,10 @@ function setupConsentAndStatus() {
 
     function handleConsentKeyDown(e) {
         if (!isDialogActive) return;
-
-        // WICHTIG: Verhindert, dass "Enter" die Konsole startet
         e.preventDefault();
         e.stopPropagation();
 
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            // Wechselt zwischen den beiden Buttons hin und her
             selectedButtonIndex = (selectedButtonIndex + 1) % 2;
             updateButtonFocus();
         } else if (e.key === 'Enter') {
@@ -536,22 +532,25 @@ function setupConsentAndStatus() {
 
     function showConsentDialog() {
         isDialogActive = true;
-        powerOnScreen.classList.add('hidden');
+        // Wichtig: Verstecke den powerOn-Text, falls er sichtbar sein sollte
+        const powerOnScreen = document.getElementById('power-on-message');
+        if (powerOnScreen) powerOnScreen.classList.add('hidden');
+        
         statusHint.classList.add('hidden');
         consentDialog.style.display = 'flex';
-        selectedButtonIndex = 0; // Auswahl immer auf "Online" zurücksetzen
+        selectedButtonIndex = 0;
         updateButtonFocus();
-        // Startet die isolierte Eingabe-Überwachung
         window.addEventListener('keydown', handleConsentKeyDown, true);
     }
 
     function hideConsentDialogAndShowPowerOn() {
         isDialogActive = false;
         consentDialog.style.display = 'none';
-        powerOnScreen.classList.remove('hidden');
         updateStatusHint();
-        // Beendet die isolierte Eingabe-Überwachung
         window.removeEventListener('keydown', handleConsentKeyDown, true);
+        
+        // KORREKTUR: powerOn() wird jetzt HIER aufgerufen
+        powerOn(); 
     }
 
     function handleConsent(choice) {
@@ -574,18 +573,19 @@ function setupConsentAndStatus() {
     if (localStorage.getItem('consentChoiceMade') !== 'true') {
         showConsentDialog();
     } else {
+        // KORREKTUR: powerOn() wird HIER aufgerufen, wenn schon zugestimmt wurde
         updateStatusHint();
+        powerOn();
     }
 
     // Listener für die H-Taste, um den Dialog erneut zu öffnen
     window.addEventListener('keydown', (e) => {
-    if (consoleGameState === 'off' && !isDialogActive && e.key.toLowerCase() === 'h') {
-        e.preventDefault(); // NEU: Verhindert die Browser-Standardaktion
-        showConsentDialog();
-    }
+        if (consoleGameState === 'off' && !isDialogActive && e.key.toLowerCase() === 'h') {
+            e.preventDefault();
+            showConsentDialog();
+        }
     });
 }
-
 if (canvas && ctx) {
     // 1. Alle Sounds initialisieren
     initLauncherSounds();
@@ -597,7 +597,7 @@ if (canvas && ctx) {
 
     // 3. Die Konsole in den "Ausgeschaltet"-Zustand versetzen
     // Dies zeigt die "Enter zum Einschalten"-Nachricht an.
-    powerOn();
+   // powerOn();
 
     // 4. Das globale Input-System für ESC, Enter etc. starten
     initializeInputSystem(
