@@ -8,12 +8,13 @@ let creditsContainer = null;
 let starAnimationId = null;
 let creditsAnimationId = null;
 let stars = [];
-
-// === HAUPTSTEUERUNG ===
+let lastStarTime = 0;
+let lastTVOffTime = 0;
 
 export function initAbspann(canvas, ctx) {
     createSimpleStars(canvas);
-    animateSimpleStars(ctx);
+    // Der erste Aufruf der Animation
+    requestAnimationFrame((time) => animateSimpleStars(ctx, time));
 
     const startVerzoegerung = 200;
     const musikFadeinDauer = 4000;
@@ -22,18 +23,11 @@ export function initAbspann(canvas, ctx) {
     setTimeout(() => {
         fadeInSound('credits_music', musikFadeinDauer);
         setTimeout(() => {
-            // Starte die Kette mit dem ERSTEN Video
             playFirstVideo(canvas);
         }, epischerMoment);
     }, startVerzoegerung);
 }
 
-// === LOGIK-FUNKTIONEN ===
-
-/**
- * Spielt das erste Video ab.AI background remover
- * @param {HTMLCanvasElement} canvas
- */
 function playFirstVideo(canvas) {
     const videoOptions = {
         sideImage: 'images/rocket.png',
@@ -116,7 +110,6 @@ function playFirstVideo(canvas) {
     }, videoOptions);
 }
 
-
 function playSecondVideo(canvas) {
     playVideo('videos/rakete.mp4', canvas, () => {
         // Diese Logik für den Übergang zum Lauftext bleibt unverändert
@@ -135,12 +128,6 @@ function playSecondVideo(canvas) {
     }); // Keine Optionen mehr hier
 }
 
-/**
- * Eine allgemeine Funktion, um ein Video abzuspielen.
- * @param {string} src - Der Pfad zur Videodatei.
- * @param {HTMLCanvasElement} canvas - Das Canvas-Element.
- * @param {Function} onEndedCallback - Die Funktion, die am Ende aufgerufen wird.
- */
 function playVideo(src, canvas, onEndedCallback, options) {
     cleanupVideo();
     const fadeDauer = 1500; // Dauer für Einblendungen in ms
@@ -192,19 +179,13 @@ function playVideo(src, canvas, onEndedCallback, options) {
     }, 100);
 }
 
-/**
- * Erstellt den Lauftext und startet die manuelle Scroll-Animation.
- * @param {HTMLCanvasElement} canvas
- */
 function startCreditScroll(canvas) {
     const screenContainer = canvas.parentElement;
     if (!screenContainer) return;
-
     creditsContainer = document.createElement('div');
     creditsContainer.id = 'credits-container';
     const creditsContent = document.createElement('div');
     creditsContent.id = 'credits-content';
-
     creditsContent.innerHTML = `
         <h2>Fritzi's Arcade Galaxy</h2><br>
         <p>Ein Projekt von</p><h3>Tenzo</h3><br><br>
@@ -219,36 +200,33 @@ function startCreditScroll(canvas) {
         <p>Benutze Technologien</p><h3>JavaScript</h3><h3>HTML5</h3><h3>CSS</h3><br><br>
         <h2>Danke fürs Spielen!</h2>
     `;
-    
     creditsContainer.appendChild(creditsContent);
     screenContainer.appendChild(creditsContainer);
-    
-    // ======== NEUER TEIL START ========
-    // Starte den Container unsichtbar und bereite die Animation vor
     creditsContainer.style.opacity = '0';
     creditsContainer.style.transition = 'opacity 1.5s ease-in-out';
-
-    // Blende den Container nach einem kurzen Moment ein
     setTimeout(() => {
         creditsContainer.style.opacity = '1';
     }, 100);
-    // ======== NEUER TEIL ENDE ========
 
     let positionY = canvas.height;
-    const scrollSpeed = 1.0;
+    const scrollSpeed = 0.06; // Geschwindigkeit in Pixel pro Millisekunde
     const creditsHeight = creditsContent.offsetHeight;
+    let lastTime = 0;
 
-    function scrollLoop() {
-        positionY -= scrollSpeed;
+    function scrollLoop(currentTime) {
+        if (!lastTime) lastTime = currentTime;
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        positionY -= scrollSpeed * deltaTime; // Bewegung wird mit Zeit multipliziert
         creditsContent.style.transform = `rotateX(12deg) translateY(${positionY}px)`;
-
         if ((positionY + creditsHeight) < 0) {
             handleCreditsEnd(canvas);
             return;
         }
         creditsAnimationId = requestAnimationFrame(scrollLoop);
     }
-    scrollLoop();
+    requestAnimationFrame(scrollLoop);
 }
 
 function handleCreditsEnd(canvas) {
@@ -278,10 +256,6 @@ function handleCreditsEnd(canvas) {
     });
 }
 
-/**
- * Erstellt die Sterne für den Hintergrund.
- * @param {HTMLCanvasElement} canvas
- */
 function createSimpleStars(canvas) {
     const starCount = 200;
     stars = [];
@@ -290,40 +264,37 @@ function createSimpleStars(canvas) {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             size: Math.random() * 1.5 + 0.5,
-            speed: Math.random() * 0.5 + 0.2
+            // HINWEIS: Geschwindigkeit ist jetzt viel kleiner (Pixel pro Millisekunde)
+            speed: (Math.random() * 20 + 10) / 1000 
         });
     }
 }
 
-/**
- * Animiert den durchgehenden Sternenhimmel.
- * @param {CanvasRenderingContext2D} ctx
- */
-function animateSimpleStars(ctx) {
+function animateSimpleStars(ctx, currentTime) {
+    if (!lastStarTime) lastStarTime = currentTime;
+    const deltaTime = currentTime - lastStarTime;
+    lastStarTime = currentTime;
+    
     const canvas = ctx.canvas;
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = 'white';
     for (const star of stars) {
-        star.y += star.speed;
+        star.y += star.speed * deltaTime; // Bewegung wird mit Zeit multipliziert
         if (star.y > canvas.height) {
             star.y = 0;
             star.x = Math.random() * canvas.width;
         }
         ctx.fillRect(star.x, star.y, star.size, star.size);
     }
-    starAnimationId = requestAnimationFrame(() => animateSimpleStars(ctx));
+    starAnimationId = requestAnimationFrame((time) => animateSimpleStars(ctx, time));
 }
 
-/**
- * Animiert den TV-Abschalt-Effekt.
- * @param {CanvasRenderingContext2D} ctx
- */
 function animateTVOff(ctx) {
     cancelAnimationFrame(starAnimationId);
     const canvas = ctx.canvas;
     let effectStrength = 1.0;
+    const animationDuration = 1500; // Effekt dauert immer 1.5 Sekunden
     const noiseData = ctx.createImageData(canvas.width, canvas.height);
     const buffer = new Uint32Array(noiseData.data.buffer);
     for (let i = 0; i < buffer.length; i++) {
@@ -331,9 +302,14 @@ function animateTVOff(ctx) {
             buffer[i] = 0xFFFFFFFF;
         }
     }
+    function squeezeEffect(currentTime) {
+        if (!lastTVOffTime) lastTVOffTime = currentTime;
+        const deltaTime = currentTime - lastTVOffTime;
+        lastTVOffTime = currentTime;
+        
+        // Verringere die Stärke basierend auf der Zeit
+        effectStrength -= deltaTime / animationDuration;
 
-    function squeezeEffect() {
-        effectStrength -= 0.02;
         if (effectStrength <= 0) {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -348,20 +324,15 @@ function animateTVOff(ctx) {
         ctx.fillRect(0, canvas.height - top, canvas.width, top);
         requestAnimationFrame(squeezeEffect);
     }
-    squeezeEffect();
+    requestAnimationFrame(squeezeEffect);
 }
 
-/**
- * Startet den Neustart der Seite nach einer Pause.
- */
 function resetGame() {
     console.log("Neustart in 2 Sekunden...");
     setTimeout(() => {
         window.location.reload();
     }, 2000);
 }
-
-// === AUFRÄUM-FUNKTIONEN ===
 
 function cleanupVideo() {
     if (videoWrapper && videoWrapper.parentNode) {
@@ -377,9 +348,6 @@ function cleanupCredits() {
     }
 }
 
-/**
- * Räumt alle Elemente auf (wird z.B. bei ESC aufgerufen).
- */
 export function cleanup() {
     if (starAnimationId) {
         cancelAnimationFrame(starAnimationId);
