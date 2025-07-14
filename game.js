@@ -52,7 +52,7 @@ function startStarWarsIntroPhase() {
     startIntro(_onIntroFinished);
 }
 
-function transitionLoop() {
+function transitionLoop(currentTime) { // <--- Parameter hier hinzufügen
     // 1. Zeichne immer den Hintergrund der Flugsequenz als unterste Ebene
     updateAndDrawLandingSequence(ctx, canvas);
 
@@ -64,7 +64,8 @@ function transitionLoop() {
         crossfadeAlpha = Math.min(crossfadeAlpha, 1.0);
 
         ctx.globalAlpha = crossfadeAlpha;
-        drawAndAnimateBackground(ctx, canvas);
+        // HIER wird currentTime jetzt korrekt übergeben
+        drawAndAnimateBackground(ctx, canvas, currentTime); 
         ctx.globalAlpha = 1.0;
     }
 
@@ -139,7 +140,7 @@ function startPixelStormTransition() {
     
     startLandingSequence();
     stormParticles = createPixelStorm(win95ImageElement, canvas);
-    transitionLoop();
+    requestAnimationFrame(transitionLoop);
 }, EXPLOSION_DELAY);
 
     } else {
@@ -438,9 +439,9 @@ function _handleGameChoice(gameId) {
     });
 }
 
-function launcherLoop() {
-    renderConsole(); // Zeichnet den aktuellen Zustand (inkl. Sternenhimmel)
-    launcherAnimationId = requestAnimationFrame(launcherLoop); // Wiederholt sich selbst
+function launcherLoop(currentTime) { // <--- Parameter hier hinzufügen
+    renderConsole(currentTime);      // <--- und hier weitergeben
+    launcherAnimationId = requestAnimationFrame(launcherLoop);
 }
 
 function handleUserRequestsSkipIntro() {
@@ -449,7 +450,7 @@ function handleUserRequestsSkipIntro() {
     }
 }
 
-function renderConsole() {
+function renderConsole(currentTime) {
     if (!ctx || !canvas) return;
 
     const { width, height } = canvas;
@@ -469,7 +470,7 @@ function renderConsole() {
         ctx.textBaseline = 'middle';
         ctx.fillText(consoleGameState === 'loading' ? "Konsole lädt..." : "Spiel lädt...", width / 2, height / 2);
     } else if (consoleGameState === 'intro' || consoleGameState === 'gameSelection') {
-        drawAndAnimateBackground(ctx, canvas);
+        drawAndAnimateBackground(ctx, canvas, currentTime);
     }
 }
 
