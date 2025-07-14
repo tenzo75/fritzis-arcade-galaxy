@@ -10,16 +10,17 @@ let imgRocketUpRight = new Image();
 let imgRocketDownLeft = new Image();
 let imgRocketDownRight = new Image();
 let imagesLoaded = false;
+let lastTime = 0; // NEU: Variable für die Zeitmessung
 
 // #####################################################################
-// ### Öffentliche (exportierte) Funktionen                        ###
+// ### Öffentliche (exportierte) Funktionen                          ###
 // #####################################################################
 
 function preloadImages() {
     if (imagesLoaded) return;
 
     let loadedCount = 0;
-    const imageCount = 4; // Wir laden jetzt 4 Bilder
+    const imageCount = 4;
 
     const onImageLoad = () => {
         loadedCount++;
@@ -34,30 +35,35 @@ function preloadImages() {
     imgRocketDownLeft.onload = onImageLoad;
     imgRocketDownRight.onload = onImageLoad;
     
-    // BITTE PASSEN SIE DIESE DATEINAMEN AN IHRE DATEIEN AN
-    imgRocketUpLeft.src = 'images/rocket_up_links.png';      // Fliegt nach links oben
-    imgRocketUpRight.src = 'images/rocket_up_rechts.png';   // Fliegt nach rechts oben
-    imgRocketDownLeft.src = 'images/rocket_down_links.png'; // Fliegt nach links unten
-    imgRocketDownRight.src = 'images/rocket_down_rechts.png';// Fliegt nach rechts unten
+    imgRocketUpLeft.src = 'images/rocket_up_links.png';
+    imgRocketUpRight.src = 'images/rocket_up_rechts.png';
+    imgRocketDownLeft.src = 'images/rocket_down_links.png';
+    imgRocketDownRight.src = 'images/rocket_down_rechts.png';
 }
 
 /**
  * Initialisiert und erzeugt alle Hintergrundeffekte.
  */
 export function initBackground(canvas) {
-    if (backgroundStars.length > 0) return;
+    // KORREKTUR: Die Zeitmessung wird jetzt immer zurückgesetzt, wenn der
+    // Hintergrund neu gestartet wird. Dies ist der wichtigste Teil der Lösung.
+    lastTime = 0; 
+
+    // Die Schutz-Bedingung bleibt, aber sie beeinflusst die Zeitmessung nicht mehr.
+    if (backgroundStars.length > 0) {
+        return;
+    }
+    
+    // Der restliche Code wird nur beim allerersten Start ausgeführt.
     preloadImages();
-    // Arrays für einen sauberen Neustart leeren
     backgroundStars = [];
     shootingStars = [];
     nebulaParticles = [];
     flyingRockets = [];
 
-    // Private Funktionen aufrufen, um die Effekte zu erstellen
     createNebula(canvas);
     createAllStars(canvas);
-    // NEU: Fliegende Raketen initial erstellen
-    const ROCKET_COUNT = 1; // Anzahl der Raketen, die im Umlauf sind
+    const ROCKET_COUNT = 1;
     for (let i = 0; i < ROCKET_COUNT; i++) {
         flyingRockets.push({ isWaiting: true });
     }
@@ -66,14 +72,21 @@ export function initBackground(canvas) {
 /**
  * Zeichnet und animiert alle Hintergrundeffekte.
  */
-export function drawAndAnimateBackground(ctx, canvas) {
+export function drawAndAnimateBackground(ctx, canvas, currentTime) { // NEU: currentTime als Parameter
+    if (!currentTime) return; // Sicherheitsabfrage, falls die Zeit noch nicht da ist
+    if (!lastTime) {
+        lastTime = currentTime;
+    }
+    const deltaSeconds = (currentTime - lastTime) / 1000; // Zeit in Sekunden
+    lastTime = currentTime;
+
     ctx.fillStyle = '#000011';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    drawAndMoveNebula(ctx, canvas);
-    drawAndMoveStars(ctx, canvas);
+    // NEU: deltaSeconds wird an die Hilfsfunktionen weitergegeben
+    drawAndMoveNebula(ctx, canvas, deltaSeconds);
+    drawAndMoveStars(ctx, canvas, deltaSeconds);
 
-    // Nur zeichnen, wenn die Bilder fertig geladen sind
     if (!imagesLoaded) return;
 
     for (const rocket of flyingRockets) {
@@ -91,14 +104,12 @@ export function drawAndAnimateBackground(ctx, canvas) {
             continue;
         }
 
-        // Rakete bewegen
-        rocket.x += rocket.speedX;
-        rocket.y += rocket.speedY;
+        // NEU: Raketenbewegung ist jetzt zeitbasiert
+        rocket.x += rocket.speedX * deltaSeconds;
+        rocket.y += rocket.speedY * deltaSeconds;
 
-        // Rakete zeichnen
         ctx.drawImage(rocket.image, rocket.x, rocket.y, rocket.width, rocket.height);
 
-        // Prüfen, ob die Rakete komplett aus dem Bild ist
         if (rocket.x > canvas.width + rocket.width || rocket.x < -rocket.width || rocket.y > canvas.height + rocket.height || rocket.y < -rocket.height) {
             rocket.isWaiting = true;
         }
@@ -107,7 +118,7 @@ export function drawAndAnimateBackground(ctx, canvas) {
 
 
 // #####################################################################
-// ### Private Funktionen (nicht exportiert)                       ###
+// ### Private Funktionen (nicht exportiert)                         ###
 // #####################################################################
 
 function createNebula(canvas) {
@@ -126,8 +137,8 @@ function createNebula(canvas) {
             radiusY: Math.random() * 80 + 40,
             color: colors[Math.floor(Math.random() * colors.length)],
             angle: Math.random() * Math.PI * 2,
-            speed: Math.random() * 0.05 + 0.02,
-            turnSpeed: (Math.random() - 0.5) * 0.001
+            speed: Math.random() * 15 + 5, // NEU: Angepasste Geschwindigkeit (Pixel pro Sekunde)
+            turnSpeed: (Math.random() - 0.5) * 0.05
         });
     }
 }
@@ -141,13 +152,13 @@ function createAllStars(canvas) {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             size: Math.random() * 1.5 + 0.5,
-            speed: Math.random() * 0.2 + 0.1,
+            speed: Math.random() * 20 + 10, // NEU: Angepasste Geschwindigkeit (Pixel pro Sekunde)
             isPulsing: false,
         };
         if (Math.random() < pulsingChance) {
             star.isPulsing = true;
             star.pulseAngle = Math.random() * Math.PI * 2;
-            star.pulseSpeed = (Math.random() * 0.04) + 0.01;
+            star.pulseSpeed = (Math.random() * 2) + 1; // Pulsieren ist okay ohne deltaTime
             star.baseAlpha = 0.4 + Math.random() * 0.4;
         }
         backgroundStars.push(star);
@@ -155,17 +166,18 @@ function createAllStars(canvas) {
 
     const shootingStarCount = 1; 
     for (let i = 0; i < shootingStarCount; i++) {
-        const newStar = { isWaiting: true };
-        shootingStars.push(newStar);
+        shootingStars.push({ isWaiting: true });
     }
 }
 
-function drawAndMoveNebula(ctx, canvas) {
+function drawAndMoveNebula(ctx, canvas, deltaSeconds) { // NEU: deltaSeconds als Parameter
     ctx.globalCompositeOperation = 'lighter';
     for (const p of nebulaParticles) {
-        p.x += Math.cos(p.angle) * p.speed;
-        p.y += Math.sin(p.angle) * p.speed;
-        p.angle += p.turnSpeed;
+        // NEU: Zeitbasierte Bewegung
+        p.x += Math.cos(p.angle) * p.speed * deltaSeconds;
+        p.y += Math.sin(p.angle) * p.speed * deltaSeconds;
+        p.angle += p.turnSpeed * deltaSeconds;
+
         if (p.x < 0 || p.x > canvas.width) p.turnSpeed *= -1;
         if (p.y < 0 || p.y > canvas.height) p.turnSpeed *= -1;
         ctx.fillStyle = p.color;
@@ -176,16 +188,16 @@ function drawAndMoveNebula(ctx, canvas) {
     ctx.globalCompositeOperation = 'source-over';
 }
 
-function drawAndMoveStars(ctx, canvas) {
+function drawAndMoveStars(ctx, canvas, deltaSeconds) { // NEU: deltaSeconds als Parameter
     for (const star of backgroundStars) {
-        star.y += star.speed;
+        star.y += star.speed * deltaSeconds; // NEU: Zeitbasierte Bewegung
         if (star.y > canvas.height) {
             star.y = 0;
             star.x = Math.random() * canvas.width;
         }
         let alpha = 1.0;
         if (star.isPulsing) {
-            star.pulseAngle += star.pulseSpeed;
+            star.pulseAngle += star.pulseSpeed * deltaSeconds; // Auch Pulsieren zeitbasiert machen
             alpha = star.baseAlpha + (Math.sin(star.pulseAngle) * (1 - star.baseAlpha));
         }
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
@@ -210,12 +222,14 @@ function drawAndMoveStars(ctx, canvas) {
             continue;
         }
         
-        shootingStar.x += shootingStar.speedX;
-        shootingStar.y += shootingStar.speedY;
+        // NEU: Zeitbasierte Bewegung
+        shootingStar.x += shootingStar.speedX * deltaSeconds;
+        shootingStar.y += shootingStar.speedY * deltaSeconds;
 
         const tailLength = 50;
-        const tailX = shootingStar.x - shootingStar.speedX * tailLength;
-        const tailY = shootingStar.y - shootingStar.speedY * tailLength;
+        // Der Schweif muss nun auch die Geschwindigkeit pro Sekunde berücksichtigen
+        const tailX = shootingStar.x - (shootingStar.speedX * deltaSeconds) * tailLength;
+        const tailY = shootingStar.y - (shootingStar.speedY * deltaSeconds) * tailLength;
         const gradient = ctx.createLinearGradient(shootingStar.x, shootingStar.y, tailX, tailY);
         gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
         gradient.addColorStop(1, 'rgba(200, 220, 255, 0)');
@@ -238,13 +252,15 @@ function resetShootingStar(star, canvas) {
     if (Math.random() > 0.5) {
         star.x = Math.random() * canvas.width;
         star.y = -20;
-        star.speedX = (Math.random() * 2) + 1; 
-        star.speedY = (Math.random() * 3) + 3;
+        // NEU: Angepasste Geschwindigkeiten (Pixel pro Sekunde)
+        star.speedX = (Math.random() * 100) + 50; 
+        star.speedY = (Math.random() * 150) + 150;
     } else {
         star.x = -20;
         star.y = Math.random() * canvas.height * 0.5;
-        star.speedX = (Math.random() * 3) + 3;
-        star.speedY = (Math.random() * 2) + 1;
+        // NEU: Angepasste Geschwindigkeiten (Pixel pro Sekunde)
+        star.speedX = (Math.random() * 150) + 150;
+        star.speedY = (Math.random() * 100) + 50;
     }
 }
 
@@ -253,8 +269,8 @@ function resetFlyingRocket(rocket, canvas) {
     rocket.height = ROCKET_SIZE;
     rocket.width = ROCKET_SIZE;
 
-    const speed = Math.random() * 1 + 0.5; // Grundgeschwindigkeit
-    const direction = Math.floor(Math.random() * 4); // Zufallszahl von 0 bis 3
+    const speed = Math.random() * 60 + 30; // NEU: Grundgeschwindigkeit in Pixel pro Sekunde
+    const direction = Math.floor(Math.random() * 4);
 
     switch (direction) {
         case 0: // Fliegt von rechts unten nach links oben
