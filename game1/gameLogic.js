@@ -85,11 +85,17 @@ export function applyPlayerHit(game) {
     return false; 
 }
 
-export function movePlayer(game) {
+export function movePlayer(game, deltaSeconds) {
     if (game.state.gameState !== 'running' || !game.canvas || !game.player) return;
 
-    let nextX = game.player.x + game.player.dx;
-    let nextY = game.player.y + game.player.dy;
+    // Hole die korrekte Geschwindigkeit für dieses Level.
+    // game.config.playerSpeed hat den Wert aus levelData (z.B. 4, 5, 6), was jetzt als Multiplikator dient.
+    const currentSpeed = game.config.playerSpeed * 60; // Basis-Geschwindigkeit von 240px/s (4 * 60)
+
+    // Berechne die Bewegung für diesen Frame
+    // Richtung (game.player.dx) * Geschwindigkeit * Zeit
+    let nextX = game.player.x + (game.player.dx * currentSpeed * deltaSeconds);
+    let nextY = game.player.y + (game.player.dy * currentSpeed * deltaSeconds);
 
     // Canvas-Grenzen
     if (nextX < 0) nextX = 0;
@@ -129,16 +135,12 @@ export function movePlayer(game) {
 
     if (collidedWithObstacle) {
         game.audio.playSound('obstacleHit');
-    } 
+    }
     if (canMoveX) {
         game.player.x = nextX;
-    } else {
-        game.player.dx = 0;
     }
     if (canMoveY) {
         game.player.y = nextY;
-    } else {
-        game.player.dy = 0;
     }
 }
 
@@ -244,7 +246,7 @@ export function checkCollisions(game) {
   }
 }
 
-export function moveEnemies(game) {
+export function moveEnemies(game, deltaSeconds) {
   if (game.state.gameState !== 'running' || !game.canvas) return;
 
   const currentLevelParams = game.config.getLevelParameters(game.state.currentLevel);
@@ -262,8 +264,8 @@ export function moveEnemies(game) {
       setAggressiveDirection(enemyUnit, game.config, game.player);
     }
 
-    let nextX = enemyUnit.x + enemyUnit.dx;
-    let nextY = enemyUnit.y + enemyUnit.dy;
+    let nextX = enemyUnit.x + enemyUnit.dx * deltaSeconds;
+    let nextY = enemyUnit.y + enemyUnit.dy * deltaSeconds;
     const enemyRectNext = { x: nextX, y: nextY, width: enemyUnit.width, height: enemyUnit.height };
     const playerRect = { x: game.player.x, y: game.player.y, width: game.player.width, height: game.player.height };
 
@@ -323,8 +325,8 @@ export function moveEnemies(game) {
       enemyUnit.y = Math.max(0, Math.min(enemyUnit.y, game.canvas.height - enemyUnit.height));
       return; 
     } else {
-      enemyUnit.x += enemyUnit.dx;
-      enemyUnit.y += enemyUnit.dy;
+      enemyUnit.x += enemyUnit.dx * deltaSeconds;
+        enemyUnit.y += enemyUnit.dy * deltaSeconds;
     }
   });
 }
