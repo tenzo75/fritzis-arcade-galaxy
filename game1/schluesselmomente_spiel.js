@@ -94,6 +94,7 @@ let finalScoreForDisplay = 0;
 let finalLevelForDisplay = 1;
 let previousLevelSummaryText = null;
 let animationFrameId = null;
+let lastTime = 0;
 let newHighscoreValue = 0;
 let currentHighscoreName = "";
 let highscoreData = [];
@@ -454,13 +455,14 @@ function startGame() {
 
   // Gegnergeschwindigkeit berechnen
   // Nutzt den importierten globalDefaultPlayerSpeed als Basis, und den Multiplikator aus den Level-Parametern.
-  let currentEnemySpeed;
-  if (typeof params.enemySpeedMultiplierLevel === 'number' && typeof enemyBaseSpeedMultiplier === 'number' && typeof enemySpeedIncrease === 'number') {
-    currentEnemySpeed = globalDefaultPlayerSpeed * (enemyBaseSpeedMultiplier + params.enemySpeedMultiplierLevel * enemySpeedIncrease);
-  } else {
-    console.warn(`startGame: Parameter für Gegnergeschwindigkeit fehlen für Level ${currentLevel}. Verwende Fallback.`);
-    currentEnemySpeed = globalDefaultPlayerSpeed * (enemyBaseSpeedMultiplier || 0.5); // Fallback-Berechnung
-  }
+    let currentEnemySpeed;
+    if (typeof params.enemySpeedMultiplierLevel === 'number' && typeof enemyBaseSpeedMultiplier === 'number' && typeof enemySpeedIncrease === 'number') {
+        // Multipliziere das Ergebnis mit 60, genau wie beim Spieler, um auf Pixel/Sekunde zu kommen
+        currentEnemySpeed = (globalDefaultPlayerSpeed * (enemyBaseSpeedMultiplier + params.enemySpeedMultiplierLevel * enemySpeedIncrease)) * 60;
+    } else {
+        console.warn(`startGame: Parameter für Gegnergeschwindigkeit fehlen für Level ${currentLevel}. Verwende Fallback.`);
+        currentEnemySpeed = (globalDefaultPlayerSpeed * (enemyBaseSpeedMultiplier || 0.5)) * 60; // Fallback-Berechnung
+    }
 
 
   // Zähler und Nachrichten für das Level initialisieren
@@ -543,13 +545,19 @@ function startGame() {
   console.log(`Level ${currentLevel} vollständig initialisiert und läuft.`);
 }
 
-function gameLoop() {
+function gameLoop(currentTime) {
+    if (!lastTime) {
+        lastTime = currentTime;
+    }
+    const deltaSeconds = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+
     if (!ctx || !canvas) {
         console.error("gameLoop: Canvas oder Context fehlt!");
         return;
     }
 
-    // --- HINTERGRUNDLOGIK (Ihre Version) ---
+    // --- HINTERGRUNDLOGIK ---
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let bgImageToDraw = null;
     let bgImageIsLoaded = false;
@@ -559,7 +567,7 @@ function gameLoop() {
             bgImageToDraw = gameContext.assets.gameStartBackgroundImage;
             bgImageIsLoaded = true;
         }
-    } else if (gameState === 'running' || gameState === 'level_summary' || gameState === 'over' || gameState === 'won' || gameState === 'entering_highscore') {
+    } else if (['running', 'level_summary', 'over', 'won', 'entering_highscore'].includes(gameState)) {
         if (gameContext.assets.gameBackgroundImage && gameContext.assets.gameBackgroundImageLoaded && gameContext.assets.gameBackgroundImageLoaded()) {
             bgImageToDraw = gameContext.assets.gameBackgroundImage;
             bgImageIsLoaded = true;
@@ -569,16 +577,12 @@ function gameLoop() {
     if (bgImageToDraw && bgImageIsLoaded) {
         ctx.drawImage(bgImageToDraw, 0, 0, canvas.width, canvas.height);
     } else {
-        if (gameState === 'running') {
-            ctx.fillStyle = "#000000";
-        } else {
-            ctx.fillStyle = "rgb(30, 30, 30)";
-        }
+        ctx.fillStyle = (gameState === 'running') ? "#000000" : "rgb(30, 30, 30)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // --- OVERLAY-LOGIK (Ihre Version) ---
-    if (gameState === 'game_start_screen' || gameState === 'level_summary' || gameState === 'over' || gameState === 'won' || gameState === 'entering_highscore') {
+    // --- OVERLAY-LOGIK ---
+    if (['game_start_screen', 'level_summary', 'over', 'won', 'entering_highscore'].includes(gameState)) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else if (gameState === 'running') {
@@ -588,55 +592,32 @@ function gameLoop() {
 
     // --- SPEZIFISCHE INHALTE ZEICHNEN ---
     if (gameState === 'game_start_screen') {
-    
-    // Standardwerte für die Endpositionen definieren
-    let animationValues = {
-        fritziX: 560,
-        hamsterY: 450,
-        titleHover: 0,
-        titleY: canvas.height / 2, // Startposition (wird animiert)
-        titleOpacity: 1, // Standard-Deckkraft
-        menuPulseSize: 0 // NEU: Standardwert für den Menü-Puls
-    };
-
-    if (menuAnimationState === 'running') {
-        const elapsedTime = Date.now() - menuAnimationStartTime;
-        const progress = Math.min(1, elapsedTime / MENU_ANIM_DURATION);
-        
-        // Positionen für Fritzi & Hamster (wie bisher)
-        animationValues.fritziX = canvas.width + (560 - canvas.width) * progress;
-        animationValues.hamsterY = canvas.height + (450 - canvas.height) * progress;
-
-        // NEU: Position und Deckkraft für den Titel animieren
-        const titleStartY = canvas.height / 2 - 200; // Startet 30px über der Endposition
-        const titleEndY = canvas.height / 2;
-        animationValues.titleY = titleStartY + (titleEndY - titleStartY) * progress;
-        animationValues.titleOpacity = progress; // Deckkraft geht von 0 auf 1
-
-        if (progress >= 1) {
-            menuAnimationState = 'finished';
+        let animationValues = {
+            fritziX: 560, hamsterY: 450, titleHover: 0,
+            titleY: canvas.height / 2, titleOpacity: 1, menuPulseSize: 0
+        };
+        if (menuAnimationState === 'running') {
+            const elapsed = Date.now() - menuAnimationStartTime;
+            const progress = Math.min(1, elapsed / MENU_ANIM_DURATION);
+            animationValues.fritziX = canvas.width + (560 - canvas.width) * progress;
+            animationValues.hamsterY = canvas.height + (450 - canvas.height) * progress;
+            const titleStartY = canvas.height / 2 - 200;
+            animationValues.titleY = titleStartY + ((canvas.height / 2) - titleStartY) * progress;
+            animationValues.titleOpacity = progress;
+            if (progress >= 1) menuAnimationState = 'finished';
         }
-    }
-
-    if (menuAnimationState === 'finished') {
-        // Dauerhafte Animationen, wenn alles an seinem Platz ist
-        animationValues.titleHover = Math.sin(Date.now() / 600) * 4;
-        
-        // NEU: Berechnung für den Puls-Effekt der Schriftgröße
-        // (Math.sin(...) + 1) / 2 ergibt einen weichen Wert zwischen 0 und 1
-        // Multipliziert mit 3 ergibt das eine Größenänderung von 0 bis 3 Pixel.
-        animationValues.menuPulseSize = ((Math.sin(Date.now() / 350) + 1) / 2) * 3;
-    }
-        // Rufe die Zeichenfunktion mit den berechneten Werten auf
+        if (menuAnimationState === 'finished') {
+            animationValues.titleHover = Math.sin(Date.now() / 600) * 4;
+            animationValues.menuPulseSize = ((Math.sin(Date.now() / 350) + 1) / 2) * 3;
+        }
         drawGameStartScreen(ctx, canvas, gameContext, startScreenState, selectedMenuItemIndex, animationValues);
-
     } else if (gameState === 'level_summary') {
         drawLevelSummaryScreen(ctx, canvas, levelStartMessage, previousLevelSummaryText, levelGoalMessage);
     } else if (gameState === 'running') {
         if (!isPaused) {
-            updatePlayerMovementLogic(gameContext);
-            movePlayer(gameContext);
-            moveEnemies(gameContext);
+            updatePlayerMovementLogic(gameContext); // Liest Tasten und setzt dx/dy
+            movePlayer(gameContext, deltaSeconds);  // Bewegt Spieler zeitbasiert
+            moveEnemies(gameContext, deltaSeconds); // Bewegt Gegner zeitbasiert
             checkCollisions(gameContext);
             checkPlayerEnemyCollision(gameContext);
         }
