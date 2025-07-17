@@ -145,8 +145,8 @@ export function processKeyUp(event, game) {
     }
 }
 
-export function updatePlayerMovement(game) { 
-    if (!game.player) return; 
+export function updatePlayerMovement(game) {
+    if (!game.player) return;
 
     if (game.state.gameState !== 'running') {
         game.player.dx = 0;
@@ -154,14 +154,18 @@ export function updatePlayerMovement(game) {
         return;
     }
 
-    game.player.dx = 0;
-    game.player.dy = 0;
+    // Setzt nur die Richtung (1, -1, oder 0)
+    let moveX = 0;
+    let moveY = 0;
 
-    // Verwende kleingeschriebene Keys für den keyState-Check
-    if (keyState['arrowleft'] || keyState['a']) game.player.dx = -game.config.playerSpeed;
-    if (keyState['arrowright'] || keyState['d']) game.player.dx = game.config.playerSpeed;
-    if (keyState['arrowup'] || keyState['w']) game.player.dy = -game.config.playerSpeed;
-    if (keyState['arrowdown'] || keyState['s']) game.player.dy = game.config.playerSpeed;
+    if (keyState['arrowleft'] || keyState['a']) moveX = -1;
+    if (keyState['arrowright'] || keyState['d']) moveX = 1;
+    if (keyState['arrowup'] || keyState['w']) moveY = -1;
+    if (keyState['arrowdown'] || keyState['s']) moveY = 1;
+
+    // Speichere die reine Richtung im Player-Objekt
+    game.player.dx = moveX;
+    game.player.dy = moveY;
 }
 
 export function resetInputState() {
