@@ -282,7 +282,7 @@ export const gameLevels = [
         //hudGoalTemplateActive: "Schlüssel: ${collected}/${keyTarget}", //für randomkeys
         hudGoalTemplateActive: "Nächster: ${nextKeyNumber}/${keyTarget}", // für numberedKeys
         enemyDirectionChangeIntervalMs: 3500,
-        playerSpeedLevel: 5
+        playerSpeedLevel: 4
     },
     
     // Level 15 (Index 14), Hindernisse, Nummer Schlüssel
@@ -298,7 +298,7 @@ export const gameLevels = [
         //hudGoalTemplateActive: "Schlüssel: ${collected}/${keyTarget}", //für randomkeys
         hudGoalTemplateActive: "Nächster: ${nextKeyNumber}/${keyTarget}", // für numberedKeys
         enemyDirectionChangeIntervalMs: 3500,
-        playerSpeedLevel: 6
+        playerSpeedLevel: 4
     },
 
     // Füge hier einfach neue Objekte für weitere Level hinzu:
