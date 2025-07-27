@@ -484,6 +484,7 @@ function switchToStartScreen() {
     hasCheckedHighScoreThisGameOver = false;
     playerLives = CONFIG.playerStartLives;
     score = 0;
+    CONFIG.currentLevelIndex = 0; 
 
     if (audioSystemReady) {
         if (audioManager.getCurrentPlayingMusicName() !== 'musik_start') {
@@ -1034,7 +1035,8 @@ function draw() {
             }
             break;
             case 'enteringHighscoreName':
-                drawNameInputScreen(ctx, highscorePlayerName, score, distanceTraveled, finalScoreForDisplay);
+               // drawNameInputScreen(ctx, highscorePlayerName, score, distanceTraveled, finalScoreForDisplay);
+                drawNameInputScreen(ctx, highscorePlayerName, finalScoreForDisplay);
             break;
         }
 
