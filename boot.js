@@ -8,13 +8,13 @@ const LINE_HEIGHT = 25;
 const FONT_FAMILY = 'VT323, monospace';
 const TEXT_COLOR = '#DDDDDD';
 const CHAR_TYPE_DELAY = 10;
-const MEMCHECK_SPEED = 150; // Angepasst für realistisches Tempo
+const MEMCHECK_SPEED = 170; // Angepasst für realistisches Tempo
 const MEMCHECK_TOTAL_KB = 65536; // Angepasst auf 64 MB
-const DRIVE_DETECT_DELAY = 1200; // Zeit in ms, die jede Erkennung dauert
+const DRIVE_DETECT_DELAY = 1600; // Zeit in ms, die jede Erkennung dauert
 const BOOT_AREA_WIDTH = 850;
 const VERTICAL_OFFSET = 50;
 const INITIAL_DELAY = 1500;      // Pause nach Enter, bevor etwas passiert
-const FADE_IN_DURATION = 6000;  // 2000ms = 2 Sekunden für das Aufleuchten
+const FADE_IN_DURATION =6000;  // 2000ms = 2 Sekunden für das Aufleuchten
 
 let isAborted = false;
 
@@ -33,7 +33,7 @@ const bootSequence = [
     { type: 'DETECT_DRIVE', line: 'Detecting IDE Secondary Slave ... ', result: 'None' },
     'BLANK_LINE','BLANK_LINE','BLANK_LINE','BLANK_LINE', 'Press ESC to SKIP', 
     '12/10/97-i430TX-PIIX4-2A59G-00',
-    'DELAY:2000', 'CLS', 'DRAW_BLOCK', 'DELAY:2000', 'Verifying DMI Pool Data ........', 'DELAY:1000',
+    'DELAY:1500', 'CLS', 'DRAW_BLOCK', 'DELAY:2000', 'Verifying DMI Pool Data ........', 'DELAY:1000',
     'Starting Fritzi’s Arcade Galaxy...', 'DELAY:1800', 'CLS'
 ];
 
@@ -145,44 +145,35 @@ function handleDriveDetection(command) {
 
 function handleFadeInText(command) {
     const lineToFadeIn = command.line;
-    let currentAlpha = 0.0; // Wir nutzen eine eigene Variable für die Deckkraft
-    const intervalTime = 50;
-    const steps = FADE_IN_DURATION / intervalTime;
-    const alphaStep = 1.0 / steps;
+    let startTime = null;
+    
+    function fadeStep(timestamp) {
+        if (isAborted) return;
+        if (!startTime) startTime = timestamp;
+        
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / FADE_IN_DURATION, 1);
 
-    const fadeInterval = setInterval(() => {
-        try {
-            if (isAborted) {
-                clearInterval(fadeInterval);
-                return;
-            }
+        // Löschen und zeichnen mit aktuellem Alpha
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(currentX, currentY, BOOT_AREA_WIDTH, FONT_SIZE);
 
-            // KORREKTUR:
-            // 1. Zuerst den Bereich mit voller Deckkraft löschen (schwarz übermalen).
+        ctx.globalAlpha = progress;
+        ctx.fillStyle = TEXT_COLOR;
+        ctx.fillText(lineToFadeIn, currentX, currentY);
+
+        if (progress < 1) {
+            requestAnimationFrame(fadeStep);
+        } else {
             ctx.globalAlpha = 1.0;
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(currentX, currentY, BOOT_AREA_WIDTH, FONT_SIZE);
-
-            // 2. Jetzt die neue, erhöhte Deckkraft für den Text setzen.
-            currentAlpha += alphaStep;
-            ctx.globalAlpha = currentAlpha;
-            ctx.fillStyle = TEXT_COLOR;
-            ctx.fillText(lineToFadeIn, currentX, currentY);
-
-
-            if (currentAlpha >= 1) {
-                clearInterval(fadeInterval);
-                ctx.globalAlpha = 1.0; // Wichtig: Deckkraft für alles weitere wieder auf 100% setzen
-                currentY += LINE_HEIGHT;
-                currentLineIndex++;
-                processNextLine();
-            }
-        } catch (e) {
-            // Falls immer noch ein Fehler auftritt, fangen wir ihn hier ab und zeigen ihn an.
-            console.error("FEHLER innerhalb der Fade-In-Animation:", e);
-            clearInterval(fadeInterval);
+            currentY += LINE_HEIGHT;
+            currentLineIndex++;
+            processNextLine();
         }
-    }, intervalTime);
+    }
+
+    requestAnimationFrame(fadeStep);
 }
 
 function processNextLine() {
