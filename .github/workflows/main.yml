@@ -1,0 +1,14 @@
+name: Supabase Ping
+
+on:
+  schedule:
+    # Führt den Job jeden Tag um 00:00 Uhr UTC aus.
+    - cron: '0 0 * * *'
+
+jobs:
+  ping_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase URL
+        run: |
+          curl "https://fmdttzfnowlfvyyyfwpl.supabase.co/functions/v1/database-access_ping"
