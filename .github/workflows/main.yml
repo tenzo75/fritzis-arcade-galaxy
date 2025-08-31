@@ -1,4 +1,4 @@
-name: Supabase Ping
+name: Supabase Tabelle
 
 on:
   schedule:
