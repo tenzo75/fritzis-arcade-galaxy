@@ -2,13 +2,26 @@ name: Supabase Ping
 
 on:
   schedule:
-    # Führt den Job jeden Tag um 00:00 Uhr UTC aus.
+    # Tägliche Ausführung
     - cron: '0 0 * * *'
 
 jobs:
   ping_supabase:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase URL
+      - name: Add and remove entry to trigger activity
         run: |
-          curl "https://fmdttzfnowlfvyyyfwpl.supabase.co/functions/v1/database-access_ping"
+          # Erstellt einen neuen Eintrag in der Tabelle.
+          curl -s --request POST \
+            --url 'https://fmdttzfnowlfvyyyfwpl.supabase.co/rest/v1/schluesselmomente_highscores' \
+            --header 'apikey: ${{ secrets.SUPABASE_API_KEY }}' \
+            --header 'Content-Type: application/json' \
+            --data '{"name": "ping", "score": 0}'
+
+          # Warten Sie kurz, um sicherzustellen, dass die Daten verarbeitet werden.
+          sleep 5
+
+          # Löscht alle Einträge, die wir gerade hinzugefügt haben.
+          curl -s --request DELETE \
+            --url 'https://fmdttzfnowlfvyyyfwpl.supabase.co/rest/v1/schluesselmomente_highscores?name=eq.ping' \
+            --header 'apikey: ${{ secrets.SUPABASE_API_KEY }}'
