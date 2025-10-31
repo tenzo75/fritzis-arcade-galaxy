@@ -1,4 +1,5 @@
 // game1/highscore.js 
+// 
 
 import { HIGHSCORE_CONFIG } from './config.js';
 
@@ -87,4 +88,5 @@ export async function isNewHighScore(newScoreValue) {
     }
     // Prüft, ob der neue Score besser ist als der letzte in der Liste
     return newScoreValue > highScores[highScores.length - 1].score;
+
 }
